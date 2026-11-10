@@ -100,6 +100,29 @@ class LiveNameTests(unittest.TestCase):
         self.assertEqual([r["id"] for r in sp.rank(rows, "sync")], [self.SID, old["id"]])
         self.assertEqual([r["id"] for r in sp.rank(rows, "main")], [self.SID])
 
+class WidthsTests(unittest.TestCase):
+    def test_numeric_columns_env_is_used(self):
+        import os
+        from unittest import mock
+        with mock.patch.dict(os.environ, {"SESHPICK_COLUMNS": "100"}):
+            self.assertEqual(sp.widths(), (42, 26))
+
+    def test_garbage_columns_env_falls_back_to_terminal_size(self):
+        import os
+        from unittest import mock
+        with mock.patch.dict(os.environ, {"SESHPICK_COLUMNS": "not-a-number"}):
+            with mock.patch("shutil.get_terminal_size",
+                            return_value=os.terminal_size((100, 30))):
+                self.assertEqual(sp.widths(), (42, 26))
+
+    def test_empty_columns_env_falls_back_to_terminal_size(self):
+        import os
+        from unittest import mock
+        with mock.patch.dict(os.environ, {"SESHPICK_COLUMNS": ""}):
+            with mock.patch("shutil.get_terminal_size",
+                            return_value=os.terminal_size((100, 30))):
+                self.assertEqual(sp.widths(), (42, 26))
+
 class ProjectAndOpenerTests(unittest.TestCase):
     def test_config_mapping_wins_then_rex_label_then_folder_name(self):
         cfg = {"projects": {"work/acme": "Acme"}}

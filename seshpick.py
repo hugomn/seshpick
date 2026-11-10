@@ -338,7 +338,11 @@ def age(ts):
 
 def widths():
     # pick() measures the terminal and passes the width to the reload command, which has no tty
-    cols = int(os.environ.get("SESHPICK_COLUMNS") or 0) or shutil.get_terminal_size().columns
+    try:
+        cols = int(os.environ.get("SESHPICK_COLUMNS") or 0)
+    except ValueError:
+        cols = 0  # garbage must not crash the picker; fall back to the terminal size
+    cols = cols or shutil.get_terminal_size().columns
     title = max(20, min(44, int(cols * 0.42)))
     return title, max(16, min(48, cols - title - 32))
 
