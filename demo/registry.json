@@ -1,0 +1,178 @@
+[
+ {
+  "id": "00000001-4d2a-4c8e-9f1b-000000000001",
+  "agent": "claude",
+  "cwd": "/home/dev/work/lumen",
+  "title": "lumen-triage",
+  "titleKind": "custom",
+  "project": "Lumen",
+  "state": "running",
+  "pid": 4001,
+  "ago": 180
+ },
+ {
+  "id": "00000002-4d2a-4c8e-9f1b-000000000002",
+  "agent": "claude",
+  "cwd": "/home/dev/work/lumen",
+  "title": "lumen-billing",
+  "titleKind": "custom",
+  "project": "Lumen",
+  "state": "running",
+  "pid": 4002,
+  "ago": 1500
+ },
+ {
+  "id": "00000003-4d2a-4c8e-9f1b-000000000003",
+  "agent": "claude",
+  "cwd": "/home/dev/work/lumen",
+  "title": "lumen-onboarding",
+  "titleKind": "custom",
+  "project": "Lumen",
+  "state": "closed",
+  "pid": null,
+  "ago": 7200
+ },
+ {
+  "id": "00000004-4d2a-4c8e-9f1b-000000000004",
+  "agent": "claude",
+  "cwd": "/home/dev/work/lumen",
+  "title": "lumen-search-index",
+  "titleKind": "custom",
+  "project": "Lumen",
+  "state": "background:done",
+  "pid": null,
+  "ago": 18000
+ },
+ {
+  "id": "00000005-4d2a-4c8e-9f1b-000000000005",
+  "agent": "claude",
+  "cwd": "/home/dev/work/lumen",
+  "title": "lumen-perf",
+  "titleKind": "custom",
+  "project": "Lumen",
+  "state": "closed",
+  "pid": null,
+  "ago": 93600
+ },
+ {
+  "id": "00000006-4d2a-4c8e-9f1b-000000000006",
+  "agent": "claude",
+  "cwd": "/home/dev/work/orbit/app",
+  "title": "orbit-release",
+  "titleKind": "custom",
+  "project": "Orbit",
+  "state": "running",
+  "pid": 4006,
+  "ago": 2400
+ },
+ {
+  "id": "00000007-4d2a-4c8e-9f1b-000000000007",
+  "agent": "claude",
+  "cwd": "/home/dev/work/orbit/app",
+  "title": "orbit-push-notifications",
+  "titleKind": "custom",
+  "project": "Orbit",
+  "state": "closed",
+  "pid": null,
+  "ago": 10800
+ },
+ {
+  "id": "00000008-4d2a-4c8e-9f1b-000000000008",
+  "agent": "claude",
+  "cwd": "/home/dev/work/orbit/app",
+  "title": "orbit-crash-triage",
+  "titleKind": "custom",
+  "project": "Orbit",
+  "state": "closed",
+  "pid": null,
+  "ago": 172800
+ },
+ {
+  "id": "00000009-4d2a-4c8e-9f1b-000000000009",
+  "agent": "claude",
+  "cwd": "/home/dev/work/orbit/app",
+  "title": "orbit-design-review",
+  "titleKind": "custom",
+  "project": "Orbit",
+  "state": "background:blocked",
+  "pid": null,
+  "ago": 25200
+ },
+ {
+  "id": "0000000a-4d2a-4c8e-9f1b-00000000000a",
+  "agent": "claude",
+  "cwd": "/home/dev/work/orbit/app",
+  "title": "orbit-ios-build",
+  "titleKind": "custom",
+  "project": "Orbit",
+  "state": "closed",
+  "pid": null,
+  "ago": 432000
+ },
+ {
+  "id": "0000000b-4d2a-4c8e-9f1b-00000000000b",
+  "agent": "claude",
+  "cwd": "/home/dev/work/tidepool",
+  "title": "tidepool-ingest",
+  "titleKind": "custom",
+  "project": "Tidepool",
+  "state": "running",
+  "pid": 4011,
+  "ago": 720
+ },
+ {
+  "id": "0000000c-4d2a-4c8e-9f1b-00000000000c",
+  "agent": "claude",
+  "cwd": "/home/dev/work/tidepool",
+  "title": "tidepool-schema",
+  "titleKind": "custom",
+  "project": "Tidepool",
+  "state": "closed",
+  "pid": null,
+  "ago": 32400
+ },
+ {
+  "id": "0000000d-4d2a-4c8e-9f1b-00000000000d",
+  "agent": "claude",
+  "cwd": "/home/dev/work/tidepool",
+  "title": "tidepool-backfill",
+  "titleKind": "custom",
+  "project": "Tidepool",
+  "state": "closed",
+  "pid": null,
+  "ago": 259200
+ },
+ {
+  "id": "0000000e-4d2a-4c8e-9f1b-00000000000e",
+  "agent": "claude",
+  "cwd": "/home/dev/work/tidepool",
+  "title": "Explain the retry policy in the worker",
+  "titleKind": "prompt",
+  "project": "Tidepool",
+  "state": "closed",
+  "pid": null,
+  "ago": 345600
+ },
+ {
+  "id": "0000000f-4d2a-4c8e-9f1b-00000000000f",
+  "agent": "claude",
+  "cwd": "/home/dev/work/orbit/app",
+  "title": "Draft release notes for the 2.3 launch",
+  "titleKind": "prompt",
+  "project": "Orbit",
+  "state": "closed",
+  "pid": null,
+  "ago": 518400
+ },
+ {
+  "id": "00000010-4d2a-4c8e-9f1b-000000000010",
+  "agent": "claude",
+  "cwd": "/home/dev/work/lumen",
+  "title": "triage-playbook",
+  "titleKind": "custom",
+  "project": "Lumen",
+  "state": "closed",
+  "pid": null,
+  "ago": 777600
+ }
+]

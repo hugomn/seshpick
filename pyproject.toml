@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "seshpick"
+dynamic = ["version"]
+description = "Find any Claude Code session, live or closed, and pick up where you left off."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [{ name = "Hugo Nogueira" }]
+keywords = ["claude-code", "sessions", "fzf", "terminal", "tmux", "rex"]
+classifiers = [
+  "Environment :: Console",
+  "Operating System :: MacOS",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3",
+  "Topic :: Utilities",
+]
+
+[project.urls]
+Homepage = "https://github.com/hugomn/seshpick"
+
+[project.scripts]
+cs = "seshpick:main"
+seshpick = "seshpick:main"
+
+[tool.setuptools]
+py-modules = ["seshpick"]
+
+[tool.setuptools.dynamic]
+version = { attr = "seshpick.__version__" }
