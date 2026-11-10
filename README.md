@@ -1,4 +1,4 @@
-# seshpick
+# seshpick 🤏🏼
 
 Find any Claude Code session, running or closed, and pick up where you left off.
 
