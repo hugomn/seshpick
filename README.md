@@ -42,7 +42,10 @@ idea which is which. `seshpick` is that one command.
 Search ranks like a name search, not a scattered fuzzy match. For each word you type, a session
 scores by: title equals the word, the word is a whole segment of the title (split on `-`, `_`,
 `/` and space), the word is a substring of the title, the word appears in the project or folder.
-Ties go to the most recently touched session. Letters spread through a name never match.
+Ties go to a running session over a closed one with the same name, then to the most recently
+touched session. Letters spread through a name never match.
+A running session listed under more than one name (the `/rename` name and the name in
+`claude agents` can differ) shows as `name / other name` and matches on any of them.
 
 ## Where it opens
 
@@ -73,7 +76,8 @@ Without a config, the label is a Rex session name found in the folder path, or t
 
 ## How it works
 
-Running sessions come from `claude agents --json --all`. Closed ones come from
+Running sessions come from `claude agents --json --all`, plus the `/rename` name from their
+transcript, which wins over the registry name. Closed ones come from
 `~/.claude/projects/*/<session-id>.jsonl`: only the first and last 256 KB of each file are read,
 for the folder, the first prompt, the `/rename` name and the auto title. Nothing is written
 there and nothing beyond a one-line title is ever shown. The picker is fzf with its own matcher
@@ -90,7 +94,7 @@ database. A temp file holds the list while the picker is open and is deleted whe
 
 ## Roadmap
 
-The registry row is agent-neutral (`id`, `agent`, `cwd`, `title`, `updatedAt`, `state`,
+The registry row is agent-neutral (`id`, `agent`, `cwd`, `title`, `aliases`, `updatedAt`, `state`,
 `resumeCmd`, `forkCmd`), so an adapter for Codex CLI or OpenCode is a function that returns such
 rows and a resume command. Not promised, but the shape is there.
 

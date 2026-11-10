@@ -14,7 +14,7 @@ Reads ~/.claude read-only, only the head and tail of each transcript, and never 
 transcript content beyond a one-line title. No network, no daemon, no database.
 Config (optional): $XDG_CONFIG_HOME/seshpick/config.toml, see README.
 """
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 
 import json, os, re, shlex, shutil, subprocess, sys, tempfile
 from datetime import datetime, timezone
@@ -59,25 +59,44 @@ def load_config():
 
 # ---- sources -------------------------------------------------------------
 
-def live_sessions():
-    """Interactive and background sessions from `claude agents`, keyed by session id."""
-    r = run(["claude", "agents", "--json", "--all"])
+def add_name(row, name, first=False):
+    """Make a row searchable by one more name. The first name is the title the row shows; the
+    rest are aliases, displayed after it as "title / alias" and matched by rank() like the title."""
+    if not name:
+        return
+    names = [n for n in [row["title"]] + list(row.get("aliases") or []) if n != name]
+    names.insert(0 if first else len(names), name)
+    row["title"], row["aliases"] = names[0], names[1:]
+
+def merge_agents(entries):
+    """One row per session id from `claude agents` entries. A session can be listed more than
+    once (an interactive entry plus a stopped background one, or two tabs), and the names can
+    differ: the interactive entry gives the state and pid, every name stays searchable."""
     out = {}
-    for a in (json.loads(r.stdout) if r.returncode == 0 and r.stdout.strip() else []):
+    for a in entries:
         sid = a.get("sessionId")
         if not sid:
             continue
         interactive = a.get("kind") == "interactive"
         state = "running" if interactive else "background:" + str(a.get("state") or a.get("status") or "?")
         started = a.get("startedAt")
-        row = dict(id=sid, agent="claude", cwd=a.get("cwd") or "", title=a.get("name") or sid[:8],
+        row = dict(id=sid, agent="claude", cwd=a.get("cwd") or "", title=a.get("name") or sid[:8], aliases=[],
                    updatedAt=iso(started / 1000) if isinstance(started, (int, float)) else "",
                    state=state, pid=a.get("pid"), titleKind="custom")
-        if sid in out and interactive and out[sid]["state"] == "running" and out[sid]["title"] != row["title"]:
-            row["title"] = out[sid]["title"] + " / " + row["title"]   # same session open twice under two names
-        if sid not in out or interactive:          # an interactive entry beats a background one
+        if sid not in out:
             out[sid] = row
+        elif interactive and out[sid]["state"] != "running":   # an interactive entry beats a background one
+            names, out[sid] = [out[sid]["title"]] + out[sid]["aliases"], row
+            for n in names:
+                add_name(row, n)
+        else:
+            add_name(out[sid], row["title"])
     return out
+
+def live_sessions():
+    """Interactive and background sessions from `claude agents`, keyed by session id."""
+    r = run(["claude", "agents", "--json", "--all"])
+    return merge_agents(json.loads(r.stdout) if r.returncode == 0 and r.stdout.strip() else [])
 
 def transcript_meta(path):
     """(cwd, title, title kind, last timestamp) from the head and tail of a transcript, read defensively."""
@@ -139,6 +158,9 @@ def registry(config):
     for sid, row in live.items():
         if sid in files:
             row["updatedAt"] = iso(files[sid].stat().st_mtime)
+            _, title, kind, _ = transcript_meta(files[sid])
+            if kind != "prompt":                    # the /rename name is what Claude itself shows for it;
+                add_name(row, title, first=kind == "custom")   # the registry name can lag behind or differ
         rows.append(row)
     for sid, p in files.items():
         if sid in live:
@@ -149,7 +171,7 @@ def registry(config):
         cwd, title, kind, _ = transcript_meta(p)
         if not cwd:
             continue
-        rows.append(dict(id=sid, agent="claude", cwd=cwd, title=title or sid[:8], titleKind=kind,
+        rows.append(dict(id=sid, agent="claude", cwd=cwd, title=title or sid[:8], aliases=[], titleKind=kind,
                          updatedAt=iso(st.st_mtime), state="closed", pid=None))
     labels = rex_sessions() if shutil.which("rex") else {}
     for r in rows:
@@ -162,30 +184,35 @@ def registry(config):
 # ---- ranking -------------------------------------------------------------
 
 KIND_RANK = {"custom": 0, "ai": 1, "prompt": 2}
+STATE_RANK = {"running": 0, "closed": 2}          # background:* sits in between
 
 def rank(rows, query):
     """Name-search order. Every word of the query must match a row; a row's place is the
     worst tier among its words, then the sum of tiers, then the kind of title (a name given
-    with /rename beats an auto title beats a first prompt), then recency (rows arrive newest first).
+    with /rename beats an auto title beats a first prompt), then a running session beats a
+    closed one with the same name, then recency (rows arrive newest first).
     Tiers: 0 title equals the word, 1 the word is a whole segment of the title (split on
     - _ / and space), 2 substring of the title, 3 substring of the project, folder or id.
+    A row's aliases (other names the same session is listed under) count like its title.
     Scattered matches (letters spread through a name) never match."""
     terms = [t for t in query.lower().split() if t]
     if not terms:
         return list(rows)
     scored = []
     for r in rows:
-        title = r["title"].lower()
-        segments = set(re.split(r"[-_/ ]+", title))
+        names = [n.lower() for n in [r["title"]] + list(r.get("aliases") or [])]
+        segments = {seg for n in names for seg in re.split(r"[-_/ ]+", n)}
         elsewhere = " ".join([r.get("project") or "", r["cwd"], r["id"]]).lower()
         tiers = []
         for t in terms:
-            tier = 0 if title == t else 1 if t in segments else 2 if t in title else 3 if t in elsewhere else None
+            tier = (0 if t in names else 1 if t in segments else 2 if any(t in n for n in names)
+                    else 3 if t in elsewhere else None)
             if tier is None:
                 break
             tiers.append(tier)
         else:
-            scored.append(((max(tiers), sum(tiers), KIND_RANK.get(r.get("titleKind"), 1)), r))
+            scored.append(((max(tiers), sum(tiers), KIND_RANK.get(r.get("titleKind"), 1),
+                            STATE_RANK.get(r.get("state"), 1)), r))
     scored.sort(key=lambda x: x[0])
     return [r for _, r in scored]
 
@@ -321,7 +348,8 @@ def short(cwd, width):
 
 def line_of(r):
     tw, fw = widths()
-    return "\t".join([r["title"][:tw].ljust(tw), (r.get("project") or "-")[:10].ljust(10), short(r["cwd"], fw).ljust(fw),
+    name = " / ".join([r["title"]] + list(r.get("aliases") or []))
+    return "\t".join([name[:tw].ljust(tw), (r.get("project") or "-")[:10].ljust(10), short(r["cwd"], fw).ljust(fw),
                       age(r["updatedAt"]).rjust(4), r["state"], r["id"]])
 
 def pick(rows, query):

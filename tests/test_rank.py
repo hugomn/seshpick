@@ -63,6 +63,43 @@ class RankTests(unittest.TestCase):
     def test_case_insensitive(self):
         self.assertEqual(titles("TRIAGE")[0], "triage")
 
+class LiveNameTests(unittest.TestCase):
+    """A running session listed twice by `claude agents`, under two names, after a /rename."""
+    SID = "0000aaaa-0000-4000-8000-000000000001"
+    ENTRIES = [
+        {"sessionId": SID, "kind": "background", "state": "stopped", "name": "lantern-sync",
+         "cwd": "/home/u/work/lantern"},
+        {"sessionId": SID, "kind": "interactive", "status": "idle", "name": "main-02", "pid": 4242,
+         "cwd": "/home/u/work/lantern", "startedAt": 1767225600000},
+    ]
+
+    def test_interactive_entry_wins_and_every_name_stays(self):
+        r = sp.merge_agents(self.ENTRIES)[self.SID]
+        self.assertEqual((r["state"], r["pid"], r["title"], r["aliases"]), ("running", 4242, "main-02", ["lantern-sync"]))
+        r = sp.merge_agents(list(reversed(self.ENTRIES)))[self.SID]
+        self.assertEqual((r["state"], r["pid"], r["title"], r["aliases"]), ("running", 4242, "main-02", ["lantern-sync"]))
+
+    def test_rename_name_from_the_transcript_becomes_the_title(self):
+        r = sp.merge_agents(self.ENTRIES)[self.SID]
+        sp.add_name(r, "lantern-sync", first=True)
+        self.assertEqual((r["title"], r["aliases"]), ("lantern-sync", ["main-02"]))
+        sp.add_name(r, "lantern-sync", first=True)                 # idempotent
+        sp.add_name(r, "Sync the lantern feed")                    # an auto title: searchable, not first
+        self.assertEqual((r["title"], r["aliases"]), ("lantern-sync", ["main-02", "Sync the lantern feed"]))
+        self.assertTrue(sp.line_of(r).startswith("lantern-sync / main-02 /"))   # column is cut to the width
+
+    def test_live_session_is_found_by_any_of_its_names_before_a_closed_one(self):
+        live = dict(row("lantern-sync", cwd="/home/u/work/lantern", project="Lantern", day=30),
+                    id=self.SID, state="running", pid=4242, aliases=["main-02"])
+        # a closed session with the same name, touched more recently (opened by mistake)
+        old = row("lantern-sync", cwd="/home/u/work/lantern", project="Lantern", day=31)
+        rows = [old, live] + FIXTURE                              # newest first, as registry() delivers
+        for query in ("sync", "lantern-sync", "main", "main-02"):
+            got = [r["id"] for r in sp.rank(rows, query)]
+            self.assertEqual(got[0], self.SID, query)
+        self.assertEqual([r["id"] for r in sp.rank(rows, "sync")], [self.SID, old["id"]])
+        self.assertEqual([r["id"] for r in sp.rank(rows, "main")], [self.SID])
+
 class ProjectAndOpenerTests(unittest.TestCase):
     def test_config_mapping_wins_then_rex_label_then_folder_name(self):
         cfg = {"projects": {"work/acme": "Acme"}}
