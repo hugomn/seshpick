@@ -4,7 +4,7 @@
   seshpick [QUERY]                 picker (fzf). enter: open, or jump to it if it is running. ctrl-f: fork
   seshpick --json [QUERY]          the registry as JSON, ranked like the picker, for scripts and agents
   seshpick --open ID | --fork ID   no picker; ID may be a prefix
-  seshpick --version | --help      (cs is the same command, installed as a short alias)
+  seshpick --version | --help      (sp is the same command, installed as a short alias)
 
 Options:
   --opener NAME              current | rex | tmux | kitty | wezterm | command (default: auto-detect)
@@ -14,7 +14,7 @@ Reads ~/.claude read-only, only the head and tail of each transcript, and never 
 transcript content beyond a one-line title. No network, no daemon, no database.
 Config (optional): $XDG_CONFIG_HOME/seshpick/config.toml, see README.
 """
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 import json, os, re, shlex, shutil, subprocess, sys, tempfile
 from datetime import datetime, timezone
@@ -279,7 +279,7 @@ def open_session(row, config, fork=False, opener=None, rex_label=None):
     cmd = ["claude", "--resume", row["id"]] + (["--fork-session"] if fork else [])
     if opener == "current":
         os.chdir(cwd)
-        os.execvp(cmd[0], cmd)                      # replaces cs with claude in this terminal
+        os.execvp(cmd[0], cmd)                      # replaces seshpick with claude in this terminal
     elif opener == "rex":
         labels = rex_sessions()
         label = rex_pick_session(cwd, config, labels, rex_label)
@@ -326,7 +326,7 @@ def line_of(r):
 
 def pick(rows, query):
     """fzf draws the list and takes keys; filtering and order come from rank() so that typing
-    inside the picker gives the same result as `cs QUERY`. fzf runs in --disabled mode and
+    inside the picker gives the same result as `seshpick QUERY`. fzf runs in --disabled mode and
     reloads the list from this script (--rank-lines) on every change, with --no-sort."""
     cache = tempfile.NamedTemporaryFile("w", prefix="seshpick-", suffix=".json", delete=False)
     try:

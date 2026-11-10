@@ -23,8 +23,8 @@ classifiers = [
 Homepage = "https://github.com/hugomn/seshpick"
 
 [project.scripts]
-cs = "seshpick:main"
 seshpick = "seshpick:main"
+sp = "seshpick:main"
 
 [tool.setuptools]
 py-modules = ["seshpick"]

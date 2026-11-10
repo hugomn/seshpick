@@ -4,8 +4,8 @@ import importlib.machinery, importlib.util, pathlib, unittest
 SRC = pathlib.Path(__file__).resolve().parents[1] / "seshpick.py"
 loader = importlib.machinery.SourceFileLoader("cs_module", str(SRC))
 spec = importlib.util.spec_from_loader("cs_module", loader)
-cs = importlib.util.module_from_spec(spec)
-loader.exec_module(cs)
+sp = importlib.util.module_from_spec(spec)
+loader.exec_module(sp)
 
 def row(title, cwd="/home/u/work/app", project="App", day=1, kind="custom"):
     return dict(id=f"{day:08x}-0000-0000-0000-000000000000", agent="claude", cwd=cwd, title=title,
@@ -31,7 +31,7 @@ FIXTURE = [
 ]
 
 def titles(query):
-    return [r["title"] for r in cs.rank(FIXTURE, query)]
+    return [r["title"] for r in sp.rank(FIXTURE, query)]
 
 class RankTests(unittest.TestCase):
     def test_segment_beats_substring_and_folder(self):
@@ -66,15 +66,15 @@ class RankTests(unittest.TestCase):
 class ProjectAndOpenerTests(unittest.TestCase):
     def test_config_mapping_wins_then_rex_label_then_folder_name(self):
         cfg = {"projects": {"work/acme": "Acme"}}
-        self.assertEqual(cs.project_of("/home/u/work/acme/api", cfg, {"Other": "s1"}), "Acme")
-        self.assertEqual(cs.project_of("/home/u/work/other/api", {}, {"Other": "s1"}), "Other")
-        self.assertEqual(cs.project_of("/home/u/work/misc/api", {}, {}), "api")
+        self.assertEqual(sp.project_of("/home/u/work/acme/api", cfg, {"Other": "s1"}), "Acme")
+        self.assertEqual(sp.project_of("/home/u/work/other/api", {}, {"Other": "s1"}), "Other")
+        self.assertEqual(sp.project_of("/home/u/work/misc/api", {}, {}), "api")
 
     def test_opener_detection_order(self):
-        self.assertEqual(cs.detect_opener({"REX_SERVER": "x", "TMUX": "y"}), "rex")
-        self.assertEqual(cs.detect_opener({"TMUX": "y", "KITTY_WINDOW_ID": "1"}), "tmux")
-        self.assertEqual(cs.detect_opener({"WEZTERM_PANE": "1"}), "wezterm")
-        self.assertEqual(cs.detect_opener({}), "current")
+        self.assertEqual(sp.detect_opener({"REX_SERVER": "x", "TMUX": "y"}), "rex")
+        self.assertEqual(sp.detect_opener({"TMUX": "y", "KITTY_WINDOW_ID": "1"}), "tmux")
+        self.assertEqual(sp.detect_opener({"WEZTERM_PANE": "1"}), "wezterm")
+        self.assertEqual(sp.detect_opener({}), "current")
 
 if __name__ == "__main__":
     unittest.main()

@@ -14,7 +14,7 @@ Find any Claude Code session, running or closed, and pick up where you left off.
 
 Needs Python 3.11 or newer, [fzf](https://github.com/junegunn/fzf) and the `claude` CLI.
 No other dependencies. `pipx install git+https://github.com/hugomn/seshpick` works too. Both
-install `seshpick` and `cs`, the same command under a short alias.
+install `seshpick` and `sp`, the same command under a short alias.
 
 ## Usage
 
